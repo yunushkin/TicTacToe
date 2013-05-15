@@ -5,6 +5,7 @@
 package tictactoe;
 
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -26,35 +27,20 @@ public class TicTacToe {
     /**
      * @param args the command line arguments
      */
-    public ServerBootstrap bootstrap;
+    public static ServerBootstrap bootstrap;
     
-    public void netInit() {
-        final int sizeBossPool = 1;
-        final int sizeWorkerPool = 4;
-        Executor bossPool = Executors.newFixedThreadPool(sizeBossPool);
-        Executor workerPool = Executors.newFixedThreadPool(sizeWorkerPool);
-        
-        ChannelFactory factory = new NioServerSocketChannelFactory(bossPool, workerPool);
-        bootstrap = new ServerBootstrap(factory);
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-        
-            @Override
-            public ChannelPipeline getPipeline() throws Exception {
-                /*PacketFrameDecoder decoder = new PacketFrameDecoder();
-                PacketFrameEncoder encoder = new PacketFrameEncoder();*/
-                return Channels.pipeline(new StringDecoder(), new StringEncoder(), null);//new PlayerHandler(decoder, encoder));
-            }
-        });
+    public static void netInit() {
         
         //channelGroup = new DefaultChannelGroup(id + "-all-channels");
     }
     
-    public static void main(String[] args) {
-        
-
-        
-        
-        System.out.println("HELLO WORLD!!!");
+    public static void main(String[] args) throws InterruptedException {
+        Server server = new Server("127.0.0.1", 8086);
+        if(!server.start())
+            System.err.println("Server not started!!!");
+        while(true) {
+            Thread.sleep(1000);
+        } 
         // TODO code application logic here
     }
 }
