@@ -5,6 +5,7 @@
 package tictactoe;
 
 import java.util.List;
+import java.util.ArrayList;
 import org.jboss.netty.channel.Channel;
 import java.util.ListIterator;
 /**
@@ -19,10 +20,11 @@ public class GamePlay {
         }
         public Channel channelX;
         public Channel channelO;
-        
     }
+    
     public static final GamePlay INSTANCE = new GamePlay();
     private GamePlay() { 
+        list = new ArrayList<Players>();
     }
     private Players findPlayer(final Channel channel) {
         ListIterator  it = list.listIterator();
@@ -35,9 +37,10 @@ public class GamePlay {
         }
         return null;
     }
-    public void getMove(Channel channel) {
+    public void beginNewGame(final Players players) {
 
     }
+    
     public void addPlayer(Channel channel) {
         Players pair = findPlayer(null);
         if(pair != null) {

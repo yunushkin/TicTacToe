@@ -32,8 +32,8 @@ public class Handler extends SimpleChannelUpstreamHandler {
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
         System.out.println("channelConnected");
+        GamePlay.INSTANCE.addPlayer(ctx.getChannel());
         super.channelConnected(ctx, e);
-        //1-занести данные о канале и игроке в массив 
         //2-найти пару для нового игрока 
         //3-определиться с выбором крестиков или ноликов
         //4-отправить оповещение крестикам о их ходе
@@ -46,8 +46,7 @@ public class Handler extends SimpleChannelUpstreamHandler {
     @Override
     public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
         System.out.println("channelDisconnected");
-                // Событие закрытия канала. Используется в основном, чтобы освободить ресурсы, или выполнить другие действия, которые происходят при отключении пользователя. Если его не обработать, Вы можете и не заметить, что пользователь отключился, если он напрямую не сказал этого серверу, а просто оборвался канал.
-        //worker.disconnectedFromChannel();
+        GamePlay.INSTANCE.deletePlayer(ctx.getChannel());
         super.channelClosed(ctx, e);
     }
     /*@Override
