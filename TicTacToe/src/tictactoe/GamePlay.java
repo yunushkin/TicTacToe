@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package tictactoe;
 
 import java.util.List;
@@ -13,49 +9,85 @@ import java.util.ListIterator;
  * @author yunushkin
  */
 public class GamePlay {
-    class Players{
-        public Players(Channel channelX_, Channel channelO_) {
+    class Games {
+        public Games(Channel channelX_, Channel channelO_) {
             channelX = channelX_;
-            channelO_ = channelO;
+            channelO = channelO_;
+            game = new Game();
         }
         public Channel channelX;
         public Channel channelO;
+        public Game game; 
     }
     
     public static final GamePlay INSTANCE = new GamePlay();
+    
     private GamePlay() { 
-        list = new ArrayList<Players>();
+        list = new ArrayList<Games>();
     }
-    private Players findPlayer(final Channel channel) {
+    
+    public void acceptPacket(Channel channel, Packet pckt) {
+        Games game = findGame(channel);
+        if(game == null) {
+            return;
+        }
+        PacketGetMoveAnswer moveAnswer = (PacketGetMoveAnswer)pckt;
+        game.game.move(moveAnswer.getMove());
+        if(game.game.getState() == Game.State.moveO) {
+            PacketGetMove pcktMove = new PacketGetMove(game.game.getBoard(), Board.Type.O);
+            game.channelO.write(pcktMove.serialize());
+        } else {
+            if(game.game.getState() == Game.State.moveX) {
+                PacketGetMove pcktMove = new PacketGetMove(game.game.getBoard(), Board.Type.X);
+                game.channelX.write(pcktMove.serialize());
+            }
+            if(game.game.getState() == Game.State.winO){
+                game.channelX.write(new PacketResult(PacketResult.Result.loss).serialize());
+                game.channelO.write(new PacketResult(PacketResult.Result.win).serialize());
+            }
+            if(game.game.getState() == Game.State.winX){
+                game.channelO.write(new PacketResult(PacketResult.Result.loss).serialize());
+                game.channelX.write(new PacketResult(PacketResult.Result.win).serialize());
+            }
+            if(game.game.getState() == Game.State.draw){
+                game.channelO.write(new PacketResult(PacketResult.Result.draw).serialize());
+                game.channelX.write(new PacketResult(PacketResult.Result.draw).serialize());
+            }
+        }
+    }
+    private Games findGame(final Channel channel) {
         ListIterator  it = list.listIterator();
-        Players pair;
+        Games pair;
         while(it.hasNext()) {
-            pair = (Players) it.next();
+            pair = (Games) it.next();
             if(pair.channelO == channel || pair.channelX == channel)  {
                 return pair;
             }
         }
         return null;
     }
-    public void beginNewGame(final Players players) {
-
+    public void beginNewGame(final Games game) {
+        game.game.newGame();
+        PacketGetMove pcktMove = new PacketGetMove(game.game.getBoard(), Board.Type.O);
+        game.channelO.write(pcktMove.serialize());
     }
-    
     public void addPlayer(Channel channel) {
-        Players pair = findPlayer(null);
+        Games pair = findGame(null);
         if(pair != null) {
             if(pair.channelO == null) {
                 pair.channelO = channel;
             } else {
                 pair.channelX = channel;
             }
+            beginNewGame(pair);
         } else {
-            list.add(new Players(channel, null));
+            list.add(new Games(null, channel));
+//            pair.channelO = channel;
+            beginNewGame(pair);
         }
     }
-    
     public void deletePlayer(Channel channel) {
-        Players pair = findPlayer(channel);
+        Games pair = findGame(channel);
         if(pair == null) {
             return;
         }
@@ -70,5 +102,5 @@ public class GamePlay {
         }    
     }
     
-    private List<Players> list;
+    private List<Games> list;
 }

@@ -41,9 +41,7 @@ public class Server {
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             @Override
             public ChannelPipeline getPipeline() throws Exception {
-                /*PacketFrameDecoder decoder = new PacketFrameDecoder();
-                PacketFrameEncoder encoder = new PacketFrameEncoder();*/
-                return Channels.pipeline(new Decoder(), new StringEncoder(), new Handler());//new PlayerHandler(decoder, encoder));
+                return Channels.pipeline(new Decoder(), new Encoder(), new Handler());//new PlayerHandler(decoder, encoder));
             }
         });
         channelGroup = new DefaultChannelGroup("Tic-Tac-Toe-Server" + "-all-channels");

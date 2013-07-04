@@ -1,19 +1,14 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package tictactoe;
-
-import javax.swing.border.Border;
-import org.jboss.netty.channel.Channel;
 
 public class Game {
     enum State{
         winX,
         winO,
         draw,
-        move
+        moveO,
+        moveX
     }
+    private State state;
     int scoreX;
     int scoreO;
     private int step;
@@ -22,6 +17,7 @@ public class Game {
         step = 0;
         scoreO = 0;
         scoreX = 0;
+        state = State.moveO;
     }
     private int place2row(int place){
         return place/board.maxRow;
@@ -29,16 +25,33 @@ public class Game {
     private int place2col(int place){
         return place%board.maxRow;
     }
-    public boolean move(int place, Board.Type type) {
-        if(type == Board.Type.X) { 
-            if(step%2 == 0) {
-                return false;
-            }
+    private State checkWinner() {
+        if(step < 4) 
+            return State.moveO;
+        if(((board.get(0, 0) == board.get(1, 1) && board.get(0, 0) == board.get(2, 2)) ||
+           (board.get(0, 2) == board.get(1, 1) && board.get(0, 2) == board.get(2, 0))) && board.get(1, 1) != Board.Type.NOT) {
+            if(board.get(1, 1) == Board.Type.O) 
+                return State.winO;
+            return State.winX;
         } else {
-            if(step%2 == 0){
-                return false;
+            for(int i = 0; i < board.maxRow; i++) {
+                if(board.get(i, 0) == board.get(i, 1) && board.get(i, 0) == board.get(i, 2) && board.get(i, 0) != Board.Type.NOT) {
+                    if(board.get(i, 0) == Board.Type.O) 
+                        return State.winO;
+                    return State.winX;
+                }
+                if(board.get(0, i) == board.get(1, i) && board.get(0, i) == board.get(2, i) && board.get(0, i) != Board.Type.NOT) {
+                    if(board.get(0, i) == Board.Type.O) 
+                        return State.winO;
+                    return State.winX;
+                }    
             }
         }
+        if(step >= 8)
+           return State.draw;
+        return State.moveO;
+    }
+    public boolean move(int place) {
         if(place < 0 &&  place > 8) {
             return false;
         }
@@ -46,15 +59,31 @@ public class Game {
         int col = place2col(place);
         if(board.get(row, col) != Board.Type.NOT)
             return false;
+        Board.Type type = Board.Type.O;
+        if(step%2 == 0) {
+            state = State.moveX;
+        } else {
+            type = Board.Type.X;
+            state = State.moveO;
+        }
         board.set(row, col, type);
-        step++;
+        State winner = checkWinner();
+        if(winner == State.moveO){
+            step++;
+        } else {
+            state = winner;
+        }
         return true;
     }
     public void newGame() {
         step = 0;
         board.clear();
+        state = State.moveO;
     }
-    public State getGameState() {
-        return State.move;
+    public State getState() {
+        return state;
     } 
+    Board getBoard() {
+        return board;
+    }
 }
